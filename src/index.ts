@@ -86,28 +86,31 @@ const resolvers: Resolvers = {
     mappingParams: DynamoMappingTemplate,
     requestParams: any,
     response: express.Response
-  ) => {
-    console.log("hit resolver")
-    console.log(mappingParams)
-    console.log(requestParams)
+  ) =>
+    new Promise((resolve, reject) => {
+      console.log("hit resolver")
+      console.log(mappingParams)
+      console.log(requestParams)
 
-    if (mappingParams.operation === "GetItem") {
-      const params: DynamoDB.Types.GetItemInput = {
-        TableName: mappingParams.table,
-        Key: mappingParams.key,
-        ConsistentRead: mappingParams.consistentRead
-      }
-      console.log(params)
-
-      ddb.getItem(params, (err, data) => {
-        if (err) {
-          console.log("Error", err)
-        } else {
-          console.log("Success", data)
+      if (mappingParams.operation === "GetItem") {
+        const params: DynamoDB.Types.GetItemInput = {
+          TableName: mappingParams.table,
+          Key: mappingParams.key,
+          ConsistentRead: mappingParams.consistentRead
         }
-      })
-    }
-  }
+        console.log(params)
+
+        ddb.getItem(params, (err, data) => {
+          if (err) {
+            console.log("Error", err)
+            reject(err)
+          } else {
+            console.log("Success", data)
+            resolve(data.Item)
+          }
+        })
+      }
+    })
 }
 
 type ResolverMapping = { [key: string]: Function }
