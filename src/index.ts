@@ -78,19 +78,21 @@ type Resolvers = {
 const resolvers: Resolvers = {
   DynamoDB: (
     mappingParams: DynamoMappingTemplate,
-    request: any,
-    response: any
+    requestParams: any,
+    response: express.Response
   ) => {
     console.log("hit resolver")
-    console.log(mappingParams, request)
+    console.log(mappingParams)
+    console.log(requestParams)
 
     if (mappingParams.operation === "GetItem") {
       const params: DynamoDB.Types.GetItemInput = {
         TableName: mappingParams.table,
-        Key: mappingParams.key
+        Key: mappingParams.key,
+        ConsistentRead: mappingParams.consistentRead
       }
       const dynamo = new DynamoDB().getItem(params, (err, data) => {
-        response.json(data)
+        console.log(err, data)
       })
     }
   }
@@ -99,15 +101,17 @@ const resolvers: Resolvers = {
 const buildResolver = (mappingTemplate: MappingConfiguration) => {
   const finalMapping: { [key: string]: Function } = {}
 
-  Object.keys(mappingTemplate).forEach(element => {
-    const kind = mappingTemplate[element].kind
+  Object.keys(mappingTemplate).forEach(key => {
+    const kind = mappingTemplate[key].kind
     const resolver = resolvers[kind]
-    finalMapping[kind] = resolver.bind(mappingTemplate)
+
+    finalMapping[key] = resolver.bind(null, mappingTemplate[key])
   })
 
-  console.log(mappingTemplate)
+  console.log("finalMapping")
+  console.log(finalMapping)
 
-  return mappingTemplate
+  return finalMapping
 }
 
 app.use(
