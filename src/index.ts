@@ -48,21 +48,6 @@ const schema = buildSchema(`
   }
 `)
 
-const persons = [
-  {
-    id: 1,
-    firstName: "Brian"
-  },
-  {
-    id: 2,
-    firstName: "John"
-  },
-  {
-    id: 3,
-    firstName: "Conner"
-  }
-]
-
 const mapping: MappingConfiguration = {
   person: {
     kind: "DynamoDB",
@@ -88,17 +73,12 @@ const resolvers: Resolvers = {
     response: express.Response
   ) =>
     new Promise((resolve, reject) => {
-      console.log("hit resolver")
-      console.log(mappingParams)
-      console.log(requestParams)
-
       if (mappingParams.operation === "GetItem") {
         const params: DynamoDB.Types.GetItemInput = {
           TableName: mappingParams.table,
           Key: mappingParams.key,
           ConsistentRead: mappingParams.consistentRead
         }
-        console.log(params)
 
         ddb.getItem(params, (err, data) => {
           if (err) {
@@ -126,9 +106,6 @@ const buildResolver = (
 
     finalMapping[key] = resolver.bind(null, mappingTemplate[key])
   })
-
-  console.log("finalMapping")
-  console.log(finalMapping)
 
   return finalMapping
 }
