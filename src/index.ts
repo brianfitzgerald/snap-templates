@@ -98,8 +98,12 @@ const resolvers: Resolvers = {
   }
 }
 
-const buildResolver = (mappingTemplate: MappingConfiguration) => {
-  const finalMapping: { [key: string]: Function } = {}
+type ResolverMapping = { [key: string]: Function }
+
+const buildResolver = (
+  mappingTemplate: MappingConfiguration
+): ResolverMapping => {
+  const finalMapping: ResolverMapping = {}
 
   Object.keys(mappingTemplate).forEach(key => {
     const kind = mappingTemplate[key].kind
