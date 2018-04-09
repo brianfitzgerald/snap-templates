@@ -1,8 +1,14 @@
 import * as express from "express"
 import { graphql, buildSchema, GraphQLType, ExecutionResult } from "graphql"
 import * as graphqlHTTP from "express-graphql"
-import { DynamoDB } from "aws-sdk"
+import { config, DynamoDB, SharedIniFileCredentials } from "aws-sdk"
 import { AttributeValue } from "aws-sdk/clients/dynamodb"
+
+const credentials = new SharedIniFileCredentials({ profile: "personal" })
+config.credentials = credentials
+config.update({ region: "us-east-1" })
+
+const ddb = new DynamoDB()
 
 type MappingConfiguration = {
   [key: string]: ResolverMappingTemplate
@@ -65,7 +71,7 @@ const mapping: MappingConfiguration = {
     consistentRead: false,
     key: {
       id: {
-        S: "$context.arguments.id"
+        S: "c35b214b-50c3-4581-a0c5-08c1fa7bb010\n"
       }
     }
   }
@@ -91,8 +97,14 @@ const resolvers: Resolvers = {
         Key: mappingParams.key,
         ConsistentRead: mappingParams.consistentRead
       }
-      const dynamo = new DynamoDB().getItem(params, (err, data) => {
-        console.log(err, data)
+      console.log(params)
+
+      ddb.getItem(params, (err, data) => {
+        if (err) {
+          console.log("Error", err)
+        } else {
+          console.log("Success", data)
+        }
       })
     }
   }
