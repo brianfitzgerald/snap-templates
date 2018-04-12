@@ -39,24 +39,24 @@ const app = express()
 // function that takes in the mapping and generates resolvers for em
 
 const schema = buildSchema(`
-  type Person {
+  type Song {
     id: Int
-    firstName: String
+    SpotifyURL: String
   }
   type Query {
-    person(id: Int): Person
+    song(id: Int): Song
   }
 `)
 
 const mapping: MappingConfiguration = {
-  person: {
+  song: {
     kind: "DynamoDB",
     operation: "GetItem",
     table: "ambliss-songs",
     consistentRead: false,
     key: {
       id: {
-        S: "c35b214b-50c3-4581-a0c5-08c1fa7bb010\n"
+        S: "c35b214b-50c3-4581-a0c5-08c1fa7bb010"
       }
     }
   }
