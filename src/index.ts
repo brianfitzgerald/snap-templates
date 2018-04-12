@@ -143,25 +143,26 @@ const resolvers: Resolvers = {
 const parseParams = (
   resolverMappingParams: ResolverMappingTemplate,
   graphQLQueryParams: GraphQLParams
-): GraphQLParams => {
+): ResolverMappingTemplate => {
+  const parsedResolverParams = resolverMappingParams
   const keys = Object.keys(resolverMappingParams)
   keys.map(key => {
     console.log()
 
     if (typeof resolverMappingParams[key] === "string") {
-      resolverMappingParams[key] = parseForContextArguments(
+      parsedResolverParams[key] = parseForContextArguments(
         resolverMappingParams[key] as string,
         resolverMappingParams,
         graphQLQueryParams
       )
     }
-    if (typeof resolverMappingParams[key] === "object") {
+    if (typeof parsedResolverParams[key] === "object") {
       const childKeys = Object.keys(resolverMappingParams[key])
       if (childKeys.length > 0) {
         console.log("object has keys ", key)
         childKeys.map(childKey => {
           if (typeof resolverMappingParams[key][childKey] === "string") {
-            resolverMappingParams[key][childKey] = parseForContextArguments(
+            parsedResolverParams[key][childKey] = parseForContextArguments(
               resolverMappingParams[key] as string,
               resolverMappingParams,
               graphQLQueryParams
@@ -172,7 +173,7 @@ const parseParams = (
     }
   })
 
-  return graphQLQueryParams
+  return parsedResolverParams
 }
 
 const parseForContextArguments = (
