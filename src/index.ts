@@ -18,7 +18,10 @@ type DynamoMappingTemplate = {
   [key: string]: any
   kind: "DynamoDB"
   operation: "GetItem" | "Query" | "PutItem"
-  table: string
+  TableName: string
+  KeyConditionExpression?: DynamoDB.KeyExpression
+  ExpressionAttributeNames?: DynamoDB.ExpressionAttributeNameMap
+  ExpressionAttributeValues?: DynamoDB.ExpressionAttributeValueMap
   key: { [key: string]: AttributeValue }
   consistentRead: boolean
 }
@@ -56,7 +59,7 @@ const mapping: MappingConfiguration = {
   song: {
     kind: "DynamoDB",
     operation: "GetItem",
-    table: "ambliss-songs",
+    TableName: "ambliss-songs",
     consistentRead: false,
     key: {
       id: {
@@ -67,7 +70,7 @@ const mapping: MappingConfiguration = {
   songByGenre: {
     kind: "DynamoDB",
     operation: "Query",
-    table: "$context.arguments.table",
+    TableName: "$context.arguments.table",
     consistentRead: false,
     key: {
       genre: {
@@ -96,7 +99,7 @@ const resolvers: Resolvers = {
         const parsedParams = parseParams(mappingParams, requestParams)
 
         const params: DynamoDB.Types.GetItemInput = {
-          TableName: mappingParams.table,
+          TableName: mappingParams.TableName,
           Key: mappingParams.key,
           ConsistentRead: mappingParams.consistentRead
         }
@@ -115,16 +118,10 @@ const resolvers: Resolvers = {
 
       if (mappingParams.operation === "Query") {
         const params: DynamoDB.Types.QueryInput = {
-          TableName: "Movies",
-          KeyConditionExpression: "#yr = :yyyy",
-          ExpressionAttributeNames: {
-            "#yr": "year"
-          },
-          ExpressionAttributeValues: {
-            ":yyyy": {
-              N: "1985"
-            }
-          }
+          TableName: mappingParams.TableName,
+          KeyConditionExpression: mappingParams.KeyConditionExpression,
+          ExpressionAttributeNames: mappingParams.ExpressionAttributeNames,
+          ExpressionAttributeValues: mappingParams.ExpressionAttributeValues
         }
 
         ddb.query(params, (err, data) => {
