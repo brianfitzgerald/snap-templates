@@ -10,7 +10,7 @@ config.update({ region: "us-east-1" })
 
 const ddb = new DynamoDB()
 
-type MappingConfiguration = {
+export type MappingConfiguration = {
   [key: string]: ResolverMappingTemplate
 }
 
@@ -32,54 +32,6 @@ type LambdaMappingTemplate = {
 
 type ResolverMappingTemplate = DynamoMappingTemplate | LambdaMappingTemplate
 
-export const APPLICATION_PORT = 3000
-
-const app = express()
-
-// get graphql request
-// send to response mapper
-// response mapper send that request to a certain resolver based on a mapping object
-// resolver completes request
-
-// function that takes in the mapping and generates resolvers for em
-
-const schema = buildSchema(`
-  type Song {
-    id: Int
-    SpotifyURL: String
-    Genre: String
-  }
-  type Query {
-    song(id: Int): Song
-    songByGenre(genre: String, table: String): Song
-  }
-`)
-
-const mapping: MappingConfiguration = {
-  song: {
-    kind: "DynamoDB",
-    operation: "GetItem",
-    TableName: "ambliss-songs",
-    consistentRead: false,
-    key: {
-      id: {
-        S: "c35b214b-50c3-4581-a0c5-08c1fa7bb010"
-      }
-    }
-  },
-  songByGenre: {
-    kind: "DynamoDB",
-    operation: "Query",
-    TableName: "$context.arguments.genre",
-    consistentRead: false,
-    key: {
-      id: {
-        S: "$context.arguments.genre"
-      }
-    }
-  }
-}
-
 type Resolvers = {
   [key: string]: Function
 }
@@ -87,6 +39,13 @@ type Resolvers = {
 type GraphQLParams = {
   [key: string]: string | boolean
 }
+
+// get graphql request
+// send to response mapper
+// response mapper send that request to a certain resolver based on a mapping object
+// resolver completes request
+
+// function that takes in the mapping and generates resolvers for em
 
 const resolvers: Resolvers = {
   DynamoDB: (
@@ -152,7 +111,7 @@ const parseParams = (
     console.log()
 
     if (typeof resolverMappingParams[key] === "string") {
-      parsedResolverParams[key] = parseForContextArguments(
+      parsedResolverParams[key] = replaceArgumentsInField(
         resolverMappingParams[key] as string,
         resolverMappingParams,
         graphQLQueryParams
@@ -161,10 +120,9 @@ const parseParams = (
     if (typeof parsedResolverParams[key] === "object") {
       const childKeys = Object.keys(resolverMappingParams[key])
       if (childKeys.length > 0) {
-        console.log("object has keys ", key)
         childKeys.map(childKey => {
           if (typeof resolverMappingParams[key][childKey] === "string") {
-            parsedResolverParams[key][childKey] = parseForContextArguments(
+            parsedResolverParams[key][childKey] = replaceArgumentsInField(
               resolverMappingParams[key] as string,
               resolverMappingParams,
               graphQLQueryParams
@@ -178,7 +136,7 @@ const parseParams = (
   return parsedResolverParams
 }
 
-const parseForContextArguments = (
+const replaceArgumentsInField = (
   paramString: string,
   resolverMappingParams: ResolverMappingTemplate,
   graphQLQueryParams: GraphQLParams
@@ -190,7 +148,7 @@ const parseForContextArguments = (
     if (paramString.indexOf(`$context.arguments.${param}`) !== -1) {
       parsedParamString = paramString.replace(
         `$context.arguments.${param}`,
-        param
+        graphQLQueryParams[param] as string
       )
     }
   }
@@ -200,7 +158,7 @@ const parseForContextArguments = (
 
 type ResolverMapping = { [key: string]: Function }
 
-const buildResolver = (
+export const buildResolver = (
   mappingTemplate: MappingConfiguration
 ): ResolverMapping => {
   const finalMapping: ResolverMapping = {}
@@ -214,16 +172,3 @@ const buildResolver = (
 
   return finalMapping
 }
-
-app.use(
-  "/graphql",
-  graphqlHTTP({
-    schema: schema,
-    rootValue: buildResolver(mapping),
-    graphiql: true
-  })
-)
-
-app.listen(APPLICATION_PORT, () => {
-  console.log(`Server is listening on port ${APPLICATION_PORT}`)
-})
