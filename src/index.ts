@@ -28,7 +28,17 @@ type DynamoGetItemTemplate = {
   query: DynamoDB.Types.GetItemInput
 }
 
-type DynamoMappingTemplate = DynamoQueryTemplate | DynamoGetItemTemplate
+type DynamoScanTemplate = {
+  [key: string]: any
+  kind: "DynamoDB"
+  operation: "Scan"
+  query: DynamoDB.Types.ScanInput
+}
+
+type DynamoMappingTemplate =
+  | DynamoQueryTemplate
+  | DynamoGetItemTemplate
+  | DynamoScanTemplate
 
 type LambdaMappingTemplate = {
   [key: string]: string | boolean | { [key: string]: AttributeValue }
@@ -86,6 +96,30 @@ const resolvers: Resolvers = {
           } else {
             console.log("Success", data)
             resolve(data.Items)
+          }
+        })
+      }
+
+      if (mappingParams.operation === "Scan") {
+        const params = parsedParams as DynamoScanTemplate
+        console.log("parsed params", params)
+        ddb.scan(params.query, (err, data) => {
+          if (err) {
+            console.log("Error", err)
+            reject(err)
+          } else {
+            console.log("Success", data)
+            const specificObject = data.Items
+              ? {
+                  id: data.Items[0].id.S,
+                  genre: data.Items[0].genre.S,
+                  SpotifyURL: data.Items[0].SpotifyURL.S
+                }
+              : {}
+            console.log(specificObject)
+
+            resolve(specificObject)
+            // resolve(data.Items)
           }
         })
       }

@@ -17,7 +17,7 @@ const app = express()
 
 const schema = buildSchema(`
   type Song {
-    id: Int
+    id: String
     SpotifyURL: String
     Genre: String
   }
@@ -42,10 +42,15 @@ const mapping: MappingConfiguration = {
   },
   songByGenre: {
     kind: "DynamoDB",
-    operation: "Query",
+    operation: "Scan",
     query: {
-      TableName: "$context.arguments.genre",
-      KeyConditionExpression: ""
+      TableName: "ambliss-songs",
+      FilterExpression: "genre = :genre",
+      ExpressionAttributeValues: {
+        ":genre": {
+          S: "$context.arguments.genre"
+        }
+      }
     }
   }
 }
