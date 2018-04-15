@@ -118,18 +118,7 @@ const parseParams = (
       )
     }
     if (typeof parsedResolverParams[key] === "object") {
-      const childKeys = Object.keys(resolverMappingParams[key])
-      if (childKeys.length > 0) {
-        childKeys.map(childKey => {
-          if (typeof resolverMappingParams[key][childKey] === "string") {
-            parsedResolverParams[key][childKey] = replaceArgumentsInField(
-              resolverMappingParams[key] as string,
-              resolverMappingParams,
-              graphQLQueryParams
-            )
-          }
-        })
-      }
+      parseParams(parsedResolverParams[key], graphQLQueryParams)
     }
   })
 
