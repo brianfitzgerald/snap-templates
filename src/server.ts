@@ -31,23 +31,21 @@ const mapping: MappingConfiguration = {
   song: {
     kind: "DynamoDB",
     operation: "GetItem",
-    TableName: "ambliss-songs",
-    consistentRead: false,
-    key: {
-      id: {
-        S: "c35b214b-50c3-4581-a0c5-08c1fa7bb010"
+    query: {
+      TableName: "ambliss-songs",
+      Key: {
+        id: {
+          S: "c35b214b-50c3-4581-a0c5-08c1fa7bb010"
+        }
       }
     }
   },
   songByGenre: {
     kind: "DynamoDB",
     operation: "Query",
-    TableName: "$context.arguments.genre",
-    consistentRead: false,
-    key: {
-      id: {
-        S: "$context.arguments.genre"
-      }
+    query: {
+      TableName: "$context.arguments.genre",
+      KeyConditionExpression: ""
     }
   }
 }

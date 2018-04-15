@@ -14,17 +14,22 @@ export type MappingConfiguration = {
   [key: string]: ResolverMappingTemplate
 }
 
-type DynamoMappingTemplate = {
+type DynamoQueryTemplate = {
   [key: string]: any
   kind: "DynamoDB"
-  operation: "GetItem" | "Query" | "PutItem"
-  TableName: string
-  KeyConditionExpression?: DynamoDB.KeyExpression
-  ExpressionAttributeNames?: DynamoDB.ExpressionAttributeNameMap
-  ExpressionAttributeValues?: DynamoDB.ExpressionAttributeValueMap
-  key: { [key: string]: AttributeValue }
-  consistentRead: boolean
+  operation: "Query"
+  query: DynamoDB.Types.QueryInput
 }
+
+type DynamoGetItemTemplate = {
+  [key: string]: any
+  kind: "DynamoDB"
+  operation: "GetItem"
+  query: DynamoDB.Types.GetItemInput
+}
+
+type DynamoMappingTemplate = DynamoQueryTemplate | DynamoGetItemTemplate
+
 type LambdaMappingTemplate = {
   [key: string]: string | boolean | { [key: string]: AttributeValue }
   kind: "Lambda"
@@ -55,16 +60,11 @@ const resolvers: Resolvers = {
   ) =>
     new Promise((resolve, reject) => {
       const parsedParams = parseParams(mappingParams, requestParams)
-      console.log("parsedParams", parsedParams)
 
       if (mappingParams.operation === "GetItem") {
-        const params: DynamoDB.Types.GetItemInput = {
-          TableName: mappingParams.TableName,
-          Key: mappingParams.key,
-          ConsistentRead: mappingParams.consistentRead
-        }
-
-        ddb.getItem(params, (err, data) => {
+        const params = parsedParams as DynamoGetItemTemplate
+        console.log("parsed params", params)
+        ddb.getItem(params.query, (err, data) => {
           if (err) {
             console.log("Error", err)
             reject(err)
@@ -77,26 +77,17 @@ const resolvers: Resolvers = {
       }
 
       if (mappingParams.operation === "Query") {
-        const params: DynamoDB.Types.QueryInput = {
-          TableName: mappingParams.TableName,
-          KeyConditionExpression: mappingParams.KeyConditionExpression,
-          ExpressionAttributeNames: mappingParams.ExpressionAttributeNames,
-          ExpressionAttributeValues: mappingParams.ExpressionAttributeValues
-        }
-
-        console.log("query params", params)
-
-        resolve({})
-
-        // ddb.query(params, (err, data) => {
-        //   if (err) {
-        //     console.log("Error", err)
-        //     reject(err)
-        //   } else {
-        //     console.log("Success", data)
-        //     resolve(data.Items)
-        //   }
-        // })
+        const params = parsedParams as DynamoQueryTemplate
+        console.log("parsed params", params)
+        ddb.query(params.query, (err, data) => {
+          if (err) {
+            console.log("Error", err)
+            reject(err)
+          } else {
+            console.log("Success", data)
+            resolve(data.Items)
+          }
+        })
       }
     })
 }
