@@ -51,7 +51,7 @@ const schema = buildSchema(`
   }
   type Query {
     song(id: Int): Song
-    songByGenre(genre: String): Song
+    songByGenre(genre: String, table: String): Song
   }
 `)
 
@@ -70,10 +70,10 @@ const mapping: MappingConfiguration = {
   songByGenre: {
     kind: "DynamoDB",
     operation: "Query",
-    TableName: "$context.arguments.table",
+    TableName: "$context.arguments.genre",
     consistentRead: false,
     key: {
-      genre: {
+      id: {
         S: "$context.arguments.genre"
       }
     }
@@ -95,9 +95,10 @@ const resolvers: Resolvers = {
     response: express.Response
   ) =>
     new Promise((resolve, reject) => {
-      if (mappingParams.operation === "GetItem") {
-        const parsedParams = parseParams(mappingParams, requestParams)
+      const parsedParams = parseParams(mappingParams, requestParams)
+      console.log("parsedParams", parsedParams)
 
+      if (mappingParams.operation === "GetItem") {
         const params: DynamoDB.Types.GetItemInput = {
           TableName: mappingParams.TableName,
           Key: mappingParams.key,
@@ -124,15 +125,19 @@ const resolvers: Resolvers = {
           ExpressionAttributeValues: mappingParams.ExpressionAttributeValues
         }
 
-        ddb.query(params, (err, data) => {
-          if (err) {
-            console.log("Error", err)
-            reject(err)
-          } else {
-            console.log("Success", data)
-            resolve(data.Items)
-          }
-        })
+        console.log("query params", params)
+
+        resolve({})
+
+        // ddb.query(params, (err, data) => {
+        //   if (err) {
+        //     console.log("Error", err)
+        //     reject(err)
+        //   } else {
+        //     console.log("Success", data)
+        //     resolve(data.Items)
+        //   }
+        // })
       }
     })
 }
@@ -179,6 +184,7 @@ const parseForContextArguments = (
   graphQLQueryParams: GraphQLParams
 ): string => {
   let parsedParamString = paramString
+  console.log("graphQLQueryParams", graphQLQueryParams)
   // need to generate an identity field as well
   for (var param in graphQLQueryParams) {
     if (paramString.indexOf(`$context.arguments.${param}`) !== -1) {
@@ -188,6 +194,7 @@ const parseForContextArguments = (
       )
     }
   }
+  console.log("parsed param string", parsedParamString)
   return parsedParamString
 }
 
