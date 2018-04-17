@@ -1,7 +1,7 @@
 import * as express from "express"
 import { graphql, buildSchema, GraphQLType, ExecutionResult } from "graphql"
 import * as graphqlHTTP from "express-graphql"
-import { config, DynamoDB, SharedIniFileCredentials } from "aws-sdk"
+import { config, DynamoDB, SharedIniFileCredentials, Lambda } from "aws-sdk"
 import { AttributeValue } from "aws-sdk/clients/dynamodb"
 
 const credentials = new SharedIniFileCredentials({ profile: "personal" })
@@ -55,16 +55,16 @@ type GraphQLParams = {
   [key: string]: string | boolean
 }
 
-// get graphql request
-// send to response mapper
-// response mapper send that request to a certain resolver based on a mapping object
-// resolver completes request
-
-// function that takes in the mapping and generates resolvers for em
+type ClientMapping = {
+  [key: string]: DynamoDB | Lambda | undefined
+  DynamoDB?: DynamoDB
+  Lambda?: Lambda
+}
 
 const resolvers: Resolvers = {
   DynamoDB: (
     mappingParams: DynamoMappingTemplate,
+    client: DynamoDB,
     requestParams: any,
     response: express.Response
   ) =>
@@ -73,13 +73,10 @@ const resolvers: Resolvers = {
 
       if (mappingParams.operation === "GetItem") {
         const params = parsedParams as DynamoGetItemTemplate
-        console.log("parsed params", params)
         ddb.getItem(params.query, (err, data) => {
           if (err) {
-            console.log("Error", err)
             reject(err)
           } else {
-            console.log("Success", data)
             resolve(data.Item)
           }
         })
@@ -88,27 +85,21 @@ const resolvers: Resolvers = {
 
       if (mappingParams.operation === "Query") {
         const params = parsedParams as DynamoQueryTemplate
-        console.log("parsed params", params)
         ddb.query(params.query, (err, data) => {
           if (err) {
-            console.log("Error", err)
             reject(err)
           } else {
             console.log("Success", data)
-            resolve(data.Items)
           }
         })
       }
 
       if (mappingParams.operation === "Scan") {
         const params = parsedParams as DynamoScanTemplate
-        console.log("parsed params", params)
         ddb.scan(params.query, (err, data) => {
           if (err) {
-            console.log("Error", err)
             reject(err)
           } else {
-            console.log("Success", data)
             const specificObject = data.Items
               ? {
                   id: data.Items[0].id.S,
@@ -116,7 +107,6 @@ const resolvers: Resolvers = {
                   SpotifyURL: data.Items[0].SpotifyURL.S
                 }
               : {}
-            console.log(specificObject)
 
             resolve(specificObject)
             // resolve(data.Items)
@@ -133,8 +123,6 @@ const parseParams = (
   const parsedResolverParams = resolverMappingParams
   const keys = Object.keys(resolverMappingParams)
   keys.map(key => {
-    console.log()
-
     if (typeof resolverMappingParams[key] === "string") {
       parsedResolverParams[key] = replaceArgumentsInField(
         resolverMappingParams[key] as string,
@@ -156,7 +144,6 @@ const replaceArgumentsInField = (
   graphQLQueryParams: GraphQLParams
 ): string => {
   let parsedParamString = paramString
-  console.log("graphQLQueryParams", graphQLQueryParams)
   // need to generate an identity field as well
   for (var param in graphQLQueryParams) {
     if (paramString.indexOf(`$context.arguments.${param}`) !== -1) {
@@ -166,14 +153,14 @@ const replaceArgumentsInField = (
       )
     }
   }
-  console.log("parsed param string", parsedParamString)
   return parsedParamString
 }
 
 type ResolverMapping = { [key: string]: Function }
 
 export const buildResolver = (
-  mappingTemplate: MappingConfiguration
+  mappingTemplate: MappingConfiguration,
+  clients: ClientMapping = {}
 ): ResolverMapping => {
   const finalMapping: ResolverMapping = {}
 
@@ -181,7 +168,11 @@ export const buildResolver = (
     const kind = mappingTemplate[key].kind
     const resolver = resolvers[kind]
 
-    finalMapping[key] = resolver.bind(null, mappingTemplate[key])
+    if (!clients[key]) {
+      console.warn(`Resolver ${key} does not have a client. It may not work.`)
+    }
+
+    finalMapping[key] = resolver.bind(null, mappingTemplate[key], clients[key])
   })
 
   return finalMapping
