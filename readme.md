@@ -2,8 +2,14 @@
 
 ![screens](https://github.com/brianfitzgerald/snap/blob/master/logo.svg)
 
-A template syntax for easily integrating various services with GraphQL in Express.
-Designed to
+Easily integrate the following services with GraphQL, without having to write resolvers:
+
+* DynamoDB
+* AWS Lambda
+* MongoDB
+* JSON
+
+And easily add more.
 
 ## Resolver Mapping Templates
 
@@ -61,4 +67,21 @@ This is the main way you implement Snap.
 It accepts an object whose keys are the mappings from your data sources to a GraphQL query.
 The function returns a mapping of GraphQL resolvers, that can be consumed as the rootValue of GraphQL Express.
 
-##
+### Mapping Templates
+
+Templates
+
+```
+type DynamoQueryTemplate = {
+    kind: "DynamoDB"
+    operation: "GetItem" | "Query"
+    query: DynamoDB.Types.GetItemInput | DynamoDB.Types.QueryInput
+}
+```
+
+```
+type DynamoQueryTemplate = {
+    kind: "Lambda"
+    FunctionName: string
+}
+```
