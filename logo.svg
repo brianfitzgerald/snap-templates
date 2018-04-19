@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="131px" height="14px" viewBox="0 0 131 14" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Artboard</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Artboard" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Logo">
+            <rect id="Rectangle" fill="#000000" x="0" y="0" width="30" height="14" rx="2"></rect>
+            <text id="Snap" font-family="SanFranciscoDisplay-Semibold, San Francisco Display" font-size="8" font-weight="500" letter-spacing="0.666666687" fill="#FEEA3C">
+                <tspan x="5" y="10">Snap</tspan>
+            </text>
+        </g>
+        <g id="Group" transform="translate(32.000000, 0.000000)">
+            <rect id="Rectangle" fill="#000000" x="0" y="0" width="99" height="14" rx="2"></rect>
+            <text id="Resolver-templating" font-family="SanFranciscoDisplay-Semibold, San Francisco Display" font-size="6" font-weight="500" letter-spacing="0.5" fill="#FEEA3C">
+                <tspan x="6" y="9">Resolver templating system</tspan>
+            </text>
+        </g>
+    </g>
+</svg>

@@ -28,18 +28,6 @@ const schema = buildSchema(`
 `)
 
 const mapping: MappingConfiguration = {
-  song: {
-    kind: "DynamoDB",
-    operation: "GetItem",
-    query: {
-      TableName: "ambliss-songs",
-      Key: {
-        id: {
-          S: "c35b214b-50c3-4581-a0c5-08c1fa7bb010"
-        }
-      }
-    }
-  },
   songByGenre: {
     kind: "DynamoDB",
     operation: "Scan",
