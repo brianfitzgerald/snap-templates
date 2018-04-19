@@ -86,7 +86,7 @@ type DynamoQueryTemplate = {
 ```
 
 ```
-type DynamoQueryTemplate = {
+type LambdaTemplate = {
     kind: "Lambda"
     FunctionName: string
 }
