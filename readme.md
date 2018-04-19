@@ -15,7 +15,13 @@ And easily add more.
 
 ## Getting Started
 
-`npm i snap-templates`
+* `npm i --save snap-templates`
+* Write a mapping configuration, see _Mapping Templates_ below
+* Change the root value of your GraphQL schema to use the buildResolver() method:
+
+```
+rootValue: buildResolver(mappingTemplate)
+```
 
 ## Code Samples
 
