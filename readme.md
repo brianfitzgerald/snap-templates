@@ -91,3 +91,21 @@ type LambdaTemplate = {
     FunctionName: string
 }
 ```
+
+### Roadmap
+
+If you want to add support for a kind of template that isn't shown here, you can create a new resolver type by following the format provided in `src/resolvers/basic.ts`.
+I'd like to provide resolver support for any service a developer would want to interface with, so if there's a service you'd like to see, open an Issue.
+
+Some clients I'm interested in seeing:
+
+* MongoDB
+* S3
+* MySQL
+* IPFS
+
+Long term features:
+
+* Graphical playground for writing mapping templates
+* A better solution for remotely loading and storing schemas, such as easy integration with DynamoDB
+* Simple server that can be set up without needing to write JavaScript; add a GUI for writing templates and setting up auth (a la AppSync)
