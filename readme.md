@@ -19,13 +19,13 @@ And easily add more.
 * Write a mapping configuration, see _Mapping Templates_ below
 * Change the root value of your GraphQL schema to use the buildResolver() method:
 
-```
+```typescript
 rootValue: buildResolver(mapping, [/* add resolvers here */]),
 ```
 
 ## Example
 
-```
+```typescript
 const app = express()
 const ddb = new DynamoDB()
 
@@ -72,7 +72,7 @@ A _mapping template_ defines how Snap accepts parameters for a request coming fr
 
 For example, a mapping template looks like this:
 
-```
+```typescript
 songByGenre: {
   kind: "DynamoDB",
   operation: "Scan",
@@ -93,7 +93,7 @@ You can do this for any field in the mapping template- even the operation being 
 
 ### Supported Template Types
 
-```
+```typescript
 type DynamoQueryTemplate = {
   kind: "DynamoDB"
   operation: "GetItem" | "Query"
@@ -101,7 +101,7 @@ type DynamoQueryTemplate = {
 }
 ```
 
-```
+```typescript
 type LambdaTemplate = {
   kind: "Lambda"
   FunctionName: string
