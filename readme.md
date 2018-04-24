@@ -20,13 +20,14 @@ And easily add more.
 * Change the root value of your GraphQL schema to use the buildResolver() method:
 
 ```
-rootValue: buildResolver(mappingTemplate)
+rootValue: buildResolver(mapping, [/* add resolvers here */]),
 ```
 
 ## Example
 
 ```
 const app = express()
+const ddb = new DynamoDB()
 
 const schema = buildSchema(`
   type Song {
@@ -59,7 +60,7 @@ app.use(
   "/graphql",
   graphqlHTTP({
     schema: schema,
-    rootValue: buildResolver(mappingTemplate),
+    rootValue: buildResolver(mapping, [DynamoResolver(ddb)]),
     graphiql: true
   })
 )
@@ -109,7 +110,7 @@ type LambdaTemplate = {
 
 ## API Overview
 
-`buildResolver(mappingTemplate: MappingConfiguration, clients: ClientMapping): ResolverMapping`
+`buildResolver(mappingTemplate: MappingConfiguration, clients: Client[]): ResolverMapping`
 
 This is the main way you implement Snap.
 It accepts an object whose keys are the mappings from your data sources to a GraphQL query.
@@ -136,5 +137,5 @@ Long term features:
 
 * CircleCI for this repo
 * Graphical playground for writing mapping templates
-* A better solution for remotely loading and storing schemas, such as easy integration with DynamoDB
+* A better solution for remotely loading and storing schemas, such as DynamoDB
 * Simple server that can be set up without needing to write JavaScript; add a GUI for writing templates and setting up auth (a la AppSync)

@@ -15,12 +15,10 @@ export type MappingConfiguration = {
   [key: string]: ResolverMappingTemplate
 }
 
-type LambdaMappingTemplate = {
-  [key: string]: string | boolean | { [key: string]: AttributeValue }
-  kind: "Lambda"
+type ResolverMappingTemplate = {
+  [key: string]: any
+  kind: string
 }
-
-type ResolverMappingTemplate = DynamoMappingTemplate | LambdaMappingTemplate
 
 type Resolvers = {
   [key: string]: Function
