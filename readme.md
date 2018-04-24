@@ -20,13 +20,14 @@ And easily add more.
 * Change the root value of your GraphQL schema to use the buildResolver() method:
 
 ```typescript
-rootValue: buildResolver(mappingTemplate)
+rootValue: buildResolver(mapping, [/* add resolvers here */]),
 ```
 
 ## Example
 
 ```typescript
 const app = express()
+const ddb = new DynamoDB()
 
 const schema = buildSchema(`
   type Song {
@@ -59,7 +60,7 @@ app.use(
   "/graphql",
   graphqlHTTP({
     schema: schema,
-    rootValue: buildResolver(mappingTemplate),
+    rootValue: buildResolver(mapping, [DynamoResolver(ddb)]),
     graphiql: true
   })
 )
@@ -117,6 +118,11 @@ type LambdaTemplate = {
 
 ## Roadmap
 
+Immediate features:
+
+* Response mapping templates
+* Client identity access within `context`
+
 If you want to add support for a kind of template that isn't shown here, you can create a new resolver type by following the format provided in `src/resolvers/basic.ts`.
 I'd like to provide resolver support for any service a developer would want to interface with, so if there's a service you'd like to see, open an Issue.
 
@@ -131,5 +137,5 @@ Long term features:
 
 * CircleCI for this repo
 * Graphical playground for writing mapping templates
-* A better solution for remotely loading and storing schemas, such as easy integration with DynamoDB
+* A better solution for remotely loading and storing schemas, such as DynamoDB
 * Simple server that can be set up without needing to write JavaScript; add a GUI for writing templates and setting up auth (a la AppSync)
