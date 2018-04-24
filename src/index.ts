@@ -5,12 +5,6 @@ import { config, DynamoDB, SharedIniFileCredentials, Lambda } from "aws-sdk"
 import { AttributeValue } from "aws-sdk/clients/dynamodb"
 import { DynamoMappingTemplate } from "./resolvers/DynamoDB"
 
-const credentials = new SharedIniFileCredentials({ profile: "personal" })
-config.credentials = credentials
-config.update({ region: "us-east-1" })
-
-const ddb = new DynamoDB()
-
 export type MappingConfiguration = {
   [key: string]: ResolverMappingTemplate
 }
@@ -24,10 +18,6 @@ type Resolvers = {
   [key: string]: Function
 }
 
-type GraphQLParams = {
-  [key: string]: string | boolean
-}
-
 type AvailableClient = Function | DynamoDB | Lambda | undefined
 
 // TODO: type the params of these functions
@@ -37,12 +27,14 @@ export type ClientDefinition = {
   resolver: Function
 }
 
-// get graphql request
-// send to response mapper
-// response mapper send that request to a certain resolver based on a mapping object
-// resolver completes request
-
-// function that takes in the mapping and generates resolvers for em
+// needed to add the index signature to dynamically access methods
+export interface GraphQLParams {
+  [index: string]: string | null | undefined | { [name: string]: any } | boolean
+  query: string | null | undefined
+  variables: { [name: string]: any } | null | undefined
+  operationName: string | null | undefined
+  raw: boolean | null | undefined
+}
 
 export const parseParams = (
   resolverMappingParams: ResolverMappingTemplate,
