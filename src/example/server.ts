@@ -3,7 +3,8 @@ import { graphql, buildSchema, GraphQLType, ExecutionResult } from "graphql"
 import * as graphqlHTTP from "express-graphql"
 import { config, DynamoDB, SharedIniFileCredentials } from "aws-sdk"
 import { AttributeValue } from "aws-sdk/clients/dynamodb"
-import { buildResolver, MappingConfiguration } from "."
+import { MappingConfiguration, buildResolver } from ".."
+import { DynamoResolver } from "../resolvers/DynamoDB"
 
 const credentials = new SharedIniFileCredentials({ profile: "personal" })
 config.credentials = credentials
@@ -22,7 +23,7 @@ const schema = buildSchema(`
     Genre: String
   }
   type Query {
-    song(id: Int): Song
+    song(id: String): Song
     songByGenre(genre: String, table: String): Song
   }
 `)
@@ -35,7 +36,7 @@ const mapping: MappingConfiguration = {
       TableName: "ambliss-songs",
       Key: {
         id: {
-          S: "c35b214b-50c3-4581-a0c5-08c1fa7bb010"
+          S: "$context.arguments.id"
         }
       }
     }
@@ -59,7 +60,7 @@ app.use(
   "/graphql",
   graphqlHTTP({
     schema: schema,
-    rootValue: buildResolver(mapping),
+    rootValue: buildResolver(mapping, [DynamoResolver(ddb)]),
     graphiql: true
   })
 )

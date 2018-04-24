@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev":
-      "concurrently -n \"tsc,server\" \"tsc -w\" \"nodemon build/server.js\"",
+      "concurrently -n \"tsc,server\" \"tsc -w\" \"nodemon build/example/server.js\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

@@ -19,14 +19,15 @@ And easily add more.
 * Write a mapping configuration, see _Mapping Templates_ below
 * Change the root value of your GraphQL schema to use the buildResolver() method:
 
-```
-rootValue: buildResolver(mappingTemplate)
+```typescript
+rootValue: buildResolver(mapping, [/* add resolvers here */]),
 ```
 
 ## Example
 
-```
+```typescript
 const app = express()
+const ddb = new DynamoDB()
 
 const schema = buildSchema(`
   type Song {
@@ -59,7 +60,7 @@ app.use(
   "/graphql",
   graphqlHTTP({
     schema: schema,
-    rootValue: buildResolver(mappingTemplate),
+    rootValue: buildResolver(mapping, [DynamoResolver(ddb)]),
     graphiql: true
   })
 )
@@ -71,7 +72,7 @@ A _mapping template_ defines how Snap accepts parameters for a request coming fr
 
 For example, a mapping template looks like this:
 
-```
+```typescript
 songByGenre: {
   kind: "DynamoDB",
   operation: "Scan",
@@ -92,7 +93,7 @@ You can do this for any field in the mapping template- even the operation being 
 
 ### Supported Template Types
 
-```
+```typescript
 type DynamoQueryTemplate = {
   kind: "DynamoDB"
   operation: "GetItem" | "Query"
@@ -100,7 +101,7 @@ type DynamoQueryTemplate = {
 }
 ```
 
-```
+```typescript
 type LambdaTemplate = {
   kind: "Lambda"
   FunctionName: string
@@ -109,13 +110,18 @@ type LambdaTemplate = {
 
 ## API Overview
 
-`buildResolver(mappingTemplate: MappingConfiguration, clients: ClientMapping): ResolverMapping`
+`buildResolver(mappingTemplate: MappingConfiguration, clients: Client[]): ResolverMapping`
 
 This is the main way you implement Snap.
 It accepts an object whose keys are the mappings from your data sources to a GraphQL query.
 The function returns a mapping of GraphQL resolvers, that can be consumed as the rootValue of GraphQL Express.
 
 ### Roadmap
+
+Immediate features:
+
+* Response mapping templates
+* Client identity access within `context`
 
 If you want to add support for a kind of template that isn't shown here, you can create a new resolver type by following the format provided in `src/resolvers/basic.ts`.
 I'd like to provide resolver support for any service a developer would want to interface with, so if there's a service you'd like to see, open an Issue.
@@ -131,5 +137,5 @@ Long term features:
 
 * CircleCI for this repo
 * Graphical playground for writing mapping templates
-* A better solution for remotely loading and storing schemas, such as easy integration with DynamoDB
+* A better solution for remotely loading and storing schemas, such as DynamoDB
 * Simple server that can be set up without needing to write JavaScript; add a GUI for writing templates and setting up auth (a la AppSync)
