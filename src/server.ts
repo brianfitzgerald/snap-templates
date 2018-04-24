@@ -3,7 +3,7 @@ import { graphql, buildSchema, GraphQLType, ExecutionResult } from "graphql"
 import * as graphqlHTTP from "express-graphql"
 import { config, DynamoDB, SharedIniFileCredentials } from "aws-sdk"
 import { AttributeValue } from "aws-sdk/clients/dynamodb"
-import { buildResolver, MappingConfiguration } from "."
+import { buildResolver, MappingConfiguration, DynamoResolver } from "."
 
 const credentials = new SharedIniFileCredentials({ profile: "personal" })
 config.credentials = credentials
@@ -59,7 +59,7 @@ app.use(
   "/graphql",
   graphqlHTTP({
     schema: schema,
-    rootValue: buildResolver(mapping),
+    rootValue: buildResolver(mapping, [DynamoResolver(ddb)]),
     graphiql: true
   })
 )
