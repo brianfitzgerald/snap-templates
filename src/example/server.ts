@@ -23,7 +23,7 @@ const schema = buildSchema(`
     Genre: String
   }
   type Query {
-    song(id: Int): Song
+    song(id: String): Song
     songByGenre(genre: String, table: String): Song
   }
 `)
@@ -36,7 +36,7 @@ const mapping: MappingConfiguration = {
       TableName: "ambliss-songs",
       Key: {
         id: {
-          S: "c35b214b-50c3-4581-a0c5-08c1fa7bb010"
+          S: "$context.arguments.id"
         }
       }
     }

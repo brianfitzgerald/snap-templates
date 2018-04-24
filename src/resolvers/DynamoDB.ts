@@ -43,7 +43,14 @@ const Dynamo = (
         if (err) {
           reject(err)
         } else {
-          resolve(data.Item)
+          const specificObject = data.Item
+            ? {
+                id: data.Item.id.S,
+                Genre: data.Item.genre.S,
+                SpotifyURL: data.Item.SpotifyURL.S
+              }
+            : {}
+          resolve(specificObject)
         }
       })
       return
@@ -51,7 +58,6 @@ const Dynamo = (
 
     if (mappingParams.operation === "Query") {
       const params = parsedParams as DynamoQueryTemplate
-      console.log("parsed params", params)
       DynamoClient.query(params.query, (err, data) => {
         if (err) {
           reject(err)
@@ -68,8 +74,7 @@ const Dynamo = (
           console.log("Error", err)
           reject(err)
         } else {
-          console.log("Success", data)
-          // refactor this
+          // refactor this when response templates are implemented
           const specificObject =
             data.Items && data.Items.length > 0
               ? {

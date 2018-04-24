@@ -104,7 +104,5 @@ export const buildResolver = (
     }
   })
 
-  console.log("final mapping", finalMapping)
-
   return finalMapping
 }
