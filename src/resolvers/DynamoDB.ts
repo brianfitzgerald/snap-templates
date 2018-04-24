@@ -28,7 +28,7 @@ export type DynamoMappingTemplate =
   | DynamoGetItemTemplate
   | DynamoScanTemplate
 
-const Dynamo = (
+const Resolver = (
   mappingParams: DynamoMappingTemplate,
   DynamoClient: DynamoDB,
   requestParams: any,
@@ -42,15 +42,9 @@ const Dynamo = (
       DynamoClient.getItem(params.query, (err, data) => {
         if (err) {
           reject(err)
-        } else {
-          const specificObject = data.Item
-            ? {
-                id: data.Item.id.S,
-                Genre: data.Item.genre.S,
-                SpotifyURL: data.Item.SpotifyURL.S
-              }
-            : {}
-          resolve(specificObject)
+        } else if (data.Item) {
+          const item = DynamoDB.Converter.unmarshall(data.Item)
+          resolve(item)
         }
       })
       return
@@ -62,7 +56,12 @@ const Dynamo = (
         if (err) {
           reject(err)
         } else {
-          resolve(data.Items)
+          if (data.Items) {
+            const parsedItems = data.Items.map(item =>
+              DynamoDB.Converter.unmarshall(item)
+            )
+            resolve(parsedItems)
+          }
         }
       })
     }
@@ -75,17 +74,12 @@ const Dynamo = (
           reject(err)
         } else {
           // refactor this when response templates are implemented
-          const specificObject =
-            data.Items && data.Items.length > 0
-              ? {
-                  id: data.Items[0].id.S,
-                  genre: data.Items[0].genre.S,
-                  SpotifyURL: data.Items[0].SpotifyURL.S
-                }
-              : {}
-
-          resolve(specificObject)
-          // resolve(data.Items)
+          if (data.Items) {
+            const parsedItems = data.Items.map(item =>
+              DynamoDB.Converter.unmarshall(item)
+            )
+            resolve(parsedItems)
+          }
         }
       })
     }
@@ -95,6 +89,6 @@ export const DynamoResolver = (client: DynamoDB): ClientDefinition => {
   return {
     type: "DynamoDB",
     client,
-    resolver: Dynamo
+    resolver: Resolver
   }
 }

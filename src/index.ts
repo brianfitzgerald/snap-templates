@@ -30,6 +30,7 @@ type GraphQLParams = {
 
 type AvailableClient = Function | DynamoDB | Lambda | undefined
 
+// TODO: type the params of these functions
 export type ClientDefinition = {
   client: AvailableClient
   type: string
