@@ -1,6 +1,6 @@
 {
   "name": "snap-templates",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "scripts": {
     "dev":
@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "express-graphql": "^0.6.12",
-    "graphql": "^0.13.2",
-    "graphql-rest-transformer": "^1.0.1"
+    "graphql": "^0.13.2"
   }
 }
