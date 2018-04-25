@@ -63,7 +63,7 @@ app.use(
 )
 ```
 
-### JSON Example
+## JSON Example
 
 ```typescript
 const schema = buildSchema(`
@@ -106,31 +106,6 @@ app.use(
 )
 ```
 
-### Mapping Templates
-
-A _mapping template_ defines how Snap accepts parameters for a request coming from GraphQL, and transforms those to requests it makes to _resolver clients_, which make queries against their respective clients.
-
-For example, a mapping template looks like this:
-
-```typescript
-songByGenre: {
-  kind: "DynamoDB",
-  operation: "Scan",
-  query: {
-    TableName: "ambliss-songs",
-    FilterExpression: "genre = :genre",
-    ExpressionAttributeValues: {
-      ":genre": {
-        S: "$context.arguments.genre"
-      }
-    }
-  }
-}
-```
-
-which takes the `genre` argument from the GraphQL query, and inserts the value of `genre` in the `ExpressionAttributeValues` value of the query that is made to DynamoDB.
-You can do this for any field in the mapping template- even the operation being performed.
-
 ## Roadmap
 
 Immediate features:
@@ -168,6 +143,31 @@ The function returns a mapping of GraphQL resolvers, that can be consumed as the
 
 This parses a query and replaces `context` and other arguments with the correct values.
 Usually called within a resolver.
+
+### Mapping Templates
+
+A _mapping template_ defines how Snap accepts parameters for a request coming from GraphQL, and transforms those to requests it makes to _resolver clients_, which make queries against their respective clients.
+
+For example, a mapping template looks like this:
+
+```typescript
+songByGenre: {
+  kind: "DynamoDB",
+  operation: "Scan",
+  query: {
+    TableName: "ambliss-songs",
+    FilterExpression: "genre = :genre",
+    ExpressionAttributeValues: {
+      ":genre": {
+        S: "$context.arguments.genre"
+      }
+    }
+  }
+}
+```
+
+which takes the `genre` argument from the GraphQL query, and inserts the value of `genre` in the `ExpressionAttributeValues` value of the query that is made to DynamoDB.
+You can do this for any field in the mapping template- even the operation being performed.
 
 ### Template Types
 
