@@ -1,7 +1,5 @@
 # Snap
 
-![screens](https://github.com/brianfitzgerald/snap/blob/master/logo.svg)
-
 Easily integrate the following services with GraphQL, without having to write resolvers:
 
 * DynamoDB
