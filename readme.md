@@ -128,8 +128,8 @@ Immediate features:
 * Client identity access within `context`
 * Mutation support
 
-If you want to add support for a kind of template that isn't shown here, you can create a new resolver type by following the format provided in `src/resolvers/basic.ts`.
-I'd like to provide resolver support for any service a developer would want to interface with, so if there's a service you'd like to see, open an Issue.
+If you want to add support for a kind of template that isn't shown here, you can create a new resolver type by following the format provided in `src/resolvers/JSON.ts`.
+I'd like to provide resolver support for any client / service a developer would want to interface with, so if there's a service you'd like to see, open an Issue.
 
 Some clients I'm interested in seeing:
 
@@ -152,6 +152,11 @@ Long term features:
 This is the main way you implement Snap.
 It accepts an object whose keys are the mappings from your data sources to a GraphQL query.
 The function returns a mapping of GraphQL resolvers, that can be consumed as the rootValue of GraphQL Express.
+
+`parseParams( resolverMappingParams: ResolverMappingTemplate, graphQLQueryParams: GraphQLParams ): ResolverMappingTemplate`
+
+This parses a query and replaces `context` and other arguments with the correct values.
+Usually called within a resolver.
 
 ### Template Types
 
