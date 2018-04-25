@@ -22,22 +22,29 @@ const Resolver = (
       const item = Client.find(item => {
         let isItem = true
         Object.keys(parsedParams.query).forEach(queryPart => {
-          if (item[queryPart] !== parsedParams[queryPart]) {
+          if (item[queryPart] !== parsedParams.query[queryPart]) {
             isItem = false
           }
+          console.log(item[queryPart], parsedParams[queryPart], isItem)
         })
+        console.log(item, isItem)
         return isItem
       })
+      console.log(item)
       resolve(item)
     } else {
       let item
       Object.keys(Client).forEach(clientItem => {
+        let isItem = true
         Object.keys(parsedParams.query).forEach(queryPart => {
-          if (Client[clientItem][queryPart] !== parsedParams[queryPart]) {
-            item = Client[clientItem]
-            resolve(item)
+          if (Client[clientItem][queryPart] !== parsedParams.query[queryPart]) {
+            isItem = false
           }
         })
+        if (isItem) {
+          item = Client[clientItem]
+          resolve(item)
+        }
       })
     }
     reject()

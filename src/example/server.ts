@@ -63,7 +63,7 @@ const mapping: MappingConfiguration = {
   bear: {
     kind: "JSON",
     query: {
-      name: "$context.arguments.breed"
+      name: "$context.arguments.name"
     }
   }
 }
