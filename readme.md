@@ -6,12 +6,12 @@ Easily integrate the following services with GraphQL, without having to write re
 
 * DynamoDB
 * AWS Lambda
-* MongoDB
 * JSON
+* MongoDB
 
 And easily add more.
 
-## Resolver Mapping Templates
+Still in a proof-of-concept stage, but very usable.
 
 ## Getting Started
 
@@ -23,7 +23,7 @@ And easily add more.
 rootValue: buildResolver(mapping, [/* add resolvers here */]),
 ```
 
-## Example
+## DynamoDB Example
 
 ```typescript
 const app = express()
@@ -41,15 +41,14 @@ const schema = buildSchema(`
 `)
 
 const mappingTemplate: MappingConfiguration = {
-  songByGenre: {
+  song: {
     kind: "DynamoDB",
-    operation: "Scan",
+    operation: "GetItem",
     query: {
       TableName: "ambliss-songs",
-      FilterExpression: "genre = :genre",
-      ExpressionAttributeValues: {
-        ":genre": {
-          S: "$context.arguments.genre"
+      Key: {
+        id: {
+          S: "$context.arguments.id"
         }
       }
     }
@@ -61,6 +60,38 @@ app.use(
   graphqlHTTP({
     schema: schema,
     rootValue: buildResolver(mapping, [DynamoResolver(ddb)]),
+    graphiql: true
+  })
+)
+```
+
+### JSON Example
+
+```typescript
+const schema = buildSchema(`
+  type Bear {
+    name: String
+    breed: String
+  }
+  type Query {
+    bear(name: String): Bear
+  }
+`)
+
+const mappingTemplate: MappingConfiguration = {
+  bear: {
+    kind: "JSON",
+    query: {
+      name: "$context.arguments.name"
+    }
+  }
+}
+
+app.use(
+  "/graphql",
+  graphqlHTTP({
+    schema: schema,
+    rootValue: buildResolver(mapping, [JSONResolver(bears)]),
     graphiql: true
   })
 )
@@ -91,37 +122,13 @@ songByGenre: {
 which takes the `genre` argument from the GraphQL query, and inserts the value of `genre` in the `ExpressionAttributeValues` value of the query that is made to DynamoDB.
 You can do this for any field in the mapping template- even the operation being performed.
 
-## API Overview
-
-`buildResolver(mappingTemplate: MappingConfiguration, clients: ClientMapping): ResolverMapping`
-
-This is the main way you implement Snap.
-It accepts an object whose keys are the mappings from your data sources to a GraphQL query.
-The function returns a mapping of GraphQL resolvers, that can be consumed as the rootValue of GraphQL Express.
-
-### Supported Template Types
-
-```typescript
-type DynamoQueryTemplate = {
-  kind: "DynamoDB"
-  operation: "GetItem" | "Query"
-  query: DynamoDB.Types.GetItemInput | DynamoDB.Types.QueryInput
-}
-```
-
-```typescript
-type LambdaTemplate = {
-  kind: "Lambda"
-  FunctionName: string
-}
-```
-
 ## Roadmap
 
 Immediate features:
 
 * Response mapping templates
 * Client identity access within `context`
+* Mutation support
 
 If you want to add support for a kind of template that isn't shown here, you can create a new resolver type by following the format provided in `src/resolvers/basic.ts`.
 I'd like to provide resolver support for any service a developer would want to interface with, so if there's a service you'd like to see, open an Issue.
@@ -139,3 +146,35 @@ Long term features:
 * Graphical playground for writing mapping templates
 * A better solution for remotely loading and storing schemas, such as DynamoDB
 * Simple server that can be set up without needing to write JavaScript; add a GUI for writing templates and setting up auth (a la AppSync)
+
+## API Overview
+
+`buildResolver(mappingTemplate: MappingConfiguration, clients: ClientMapping): ResolverMapping`
+
+This is the main way you implement Snap.
+It accepts an object whose keys are the mappings from your data sources to a GraphQL query.
+The function returns a mapping of GraphQL resolvers, that can be consumed as the rootValue of GraphQL Express.
+
+### Template Types
+
+```typescript
+type DynamoQueryTemplate = {
+  kind: "DynamoDB"
+  operation: "GetItem" | "Query"
+  query: DynamoDB.Types.GetItemInput | DynamoDB.Types.QueryInput
+}
+```
+
+```typescript
+type LambdaTemplate = {
+  kind: "Lambda"
+  FunctionName: string
+}
+```
+
+```typescript
+type JSONMappingTemplate = {
+  kind: "JSON"
+  query: object
+}
+```
