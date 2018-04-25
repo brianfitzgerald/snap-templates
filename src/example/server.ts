@@ -5,6 +5,7 @@ import { config, DynamoDB, SharedIniFileCredentials } from "aws-sdk"
 import { AttributeValue } from "aws-sdk/clients/dynamodb"
 import { MappingConfiguration, buildResolver } from ".."
 import { DynamoResolver } from "../resolvers/DynamoDB"
+import { JSONResolver } from "../resolvers/JSON"
 
 const credentials = new SharedIniFileCredentials({ profile: "personal" })
 config.credentials = credentials
@@ -22,9 +23,14 @@ const schema = buildSchema(`
     SpotifyURL: String
     Genre: String
   }
+  type Bear {
+    name: String
+    breed: String
+  }
   type Query {
     song(id: String): Song
     songByGenre(genre: String, table: String): Song
+    bear(name: String): Bear
   }
 `)
 
@@ -56,11 +62,25 @@ const mapping: MappingConfiguration = {
   }
 }
 
+const bears = [
+  {
+    name: "Carl",
+    breed: "black bear"
+  },
+  {
+    name: "Steve",
+    breed: "polar bear"
+  }
+]
+
 app.use(
   "/graphql",
   graphqlHTTP({
     schema: schema,
-    rootValue: buildResolver(mapping, [DynamoResolver(ddb)]),
+    rootValue: buildResolver(mapping, [
+      DynamoResolver(ddb),
+      JSONResolver(bears)
+    ]),
     graphiql: true
   })
 )

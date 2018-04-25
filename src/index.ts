@@ -3,7 +3,7 @@ import { graphql, buildSchema, GraphQLType, ExecutionResult } from "graphql"
 import * as graphqlHTTP from "express-graphql"
 import { config, DynamoDB, SharedIniFileCredentials, Lambda } from "aws-sdk"
 import { AttributeValue } from "aws-sdk/clients/dynamodb"
-import { DynamoMappingTemplate } from "./resolvers/DynamoDB"
+import { DynamoMappingTemplate, DynamoResolver } from "./resolvers/DynamoDB"
 
 export type MappingConfiguration = {
   [key: string]: ResolverMappingTemplate
@@ -18,7 +18,7 @@ type Resolvers = {
   [key: string]: Function
 }
 
-type AvailableClient = Function | DynamoDB | Lambda | undefined
+type AvailableClient = object | Function | DynamoDB | Lambda | undefined
 
 // TODO: type the params of these functions
 export type ClientDefinition = {
