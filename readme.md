@@ -76,6 +76,17 @@ const schema = buildSchema(`
   }
 `)
 
+const bears = [
+  {
+    name: "Carl",
+    breed: "black bear"
+  },
+  {
+    name: "Steve",
+    breed: "polar bear"
+  }
+]
+
 const mappingTemplate: MappingConfiguration = {
   bear: {
     kind: "JSON",
