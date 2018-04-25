@@ -1,15 +1,20 @@
 {
-  "name": "graphql-rest",
-  "version": "1.0.0",
+  "name": "snap-templates",
+  "version": "1.0.1",
   "description": "",
   "scripts": {
     "dev":
       "concurrently -n \"tsc,server\" \"tsc -w\" \"nodemon build/example/server.js\"",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc"
   },
-  "author": "",
+  "author": "Brian Fitzgerald",
   "license": "ISC",
+  "homepage": "https://github.com/brianfitzgerald/snap",
+  "main": "build/index.js",
+  "files": ["build/"],
   "devDependencies": {
+    "aws-sdk": "^2.222.1",
     "@types/express": "^4.11.1",
     "@types/node": "^9.6.2",
     "@types/graphql": "^0.13.0",
@@ -20,8 +25,11 @@
     "nodemon": "^1.17.3",
     "typescript": "^2.8.1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brianfitzgerald/snap.git"
+  },
   "dependencies": {
-    "aws-sdk": "^2.222.1",
     "express-graphql": "^0.6.12",
     "graphql": "^0.13.2",
     "graphql-rest-transformer": "^1.0.1"
