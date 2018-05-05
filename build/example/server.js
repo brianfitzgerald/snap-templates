@@ -28,6 +28,9 @@ const schema = graphql_1.buildSchema(`
     songByGenre(genre: String, table: String): Song
     bear(name: String): Bear
   }
+  type Mutation {
+    createSong(id: String, name: String, SpotifyURL: String): String
+  }
 `);
 const mapping = {
     song: {
@@ -55,10 +58,29 @@ const mapping = {
             }
         }
     },
+    createSong: {
+        kind: "DynamoDB",
+        operation: "PutItem",
+        query: {
+            TableName: "ambliss-songs"
+        }
+    },
     bear: {
         kind: "JSON",
         query: {
             name: "$context.arguments.name"
+        }
+    }
+};
+const createSong = {
+    kind: "DynamoDB",
+    operation: "PutItem",
+    query: {
+        TableName: "ambliss-songs",
+        Item: {
+            id: { S: "$context.arguments.id" },
+            SpotifyURL: { S: "$context.arguments.SpotifyURL" },
+            Genre: { S: "$context.arguments.Genre" }
         }
     }
 };

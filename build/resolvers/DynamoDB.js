@@ -47,6 +47,30 @@ const Resolver = (mappingParams, DynamoClient, requestParams, response) => new P
             }
         });
     }
+    if (mappingParams.operation === "PutItem") {
+        const params = parsedParams;
+        DynamoClient.putItem(params.query, (err, data) => {
+            if (err) {
+                console.log("Error", err);
+                reject(err);
+            }
+            else {
+                resolve(data);
+            }
+        });
+    }
+    if (mappingParams.operation === "PutItem") {
+        const params = parsedParams;
+        DynamoClient.putItem(params.query, (err, data) => {
+            if (err) {
+                console.log("Error", err);
+                reject(err);
+            }
+            else {
+                resolve(data);
+            }
+        });
+    }
 });
 exports.DynamoResolver = (client) => {
     return {

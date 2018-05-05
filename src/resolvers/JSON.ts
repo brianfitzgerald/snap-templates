@@ -25,12 +25,9 @@ const Resolver = (
           if (item[queryPart] !== parsedParams.query[queryPart]) {
             isItem = false
           }
-          console.log(item[queryPart], parsedParams[queryPart], isItem)
         })
-        console.log(item, isItem)
         return isItem
       })
-      console.log(item)
       resolve(item)
     } else {
       let item

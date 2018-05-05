@@ -4,7 +4,7 @@ import * as graphqlHTTP from "express-graphql"
 import { config, DynamoDB, SharedIniFileCredentials } from "aws-sdk"
 import { AttributeValue } from "aws-sdk/clients/dynamodb"
 import { MappingConfiguration, buildResolver } from ".."
-import { DynamoResolver } from "../resolvers/DynamoDB"
+import { DynamoResolver, DynamoPutItemTemplate } from "../resolvers/DynamoDB"
 import { JSONResolver } from "../resolvers/JSON"
 
 const credentials = new SharedIniFileCredentials({ profile: "personal" })
@@ -31,6 +31,9 @@ const schema = buildSchema(`
     song(id: String): Song
     songByGenre(genre: String, table: String): Song
     bear(name: String): Bear
+  }
+  type Mutation {
+    createSong(id: String, name: String, SpotifyURL: String): String
   }
 `)
 
@@ -60,10 +63,30 @@ const mapping: MappingConfiguration = {
       }
     }
   },
+  createSong: {
+    kind: "DynamoDB",
+    operation: "PutItem",
+    query: {
+      TableName: "ambliss-songs"
+    }
+  },
   bear: {
     kind: "JSON",
     query: {
       name: "$context.arguments.name"
+    }
+  }
+}
+
+const createSong: DynamoPutItemTemplate = {
+  kind: "DynamoDB",
+  operation: "PutItem",
+  query: {
+    TableName: "ambliss-songs",
+    Item: {
+      id: { S: "$context.arguments.id" },
+      SpotifyURL: { S: "$context.arguments.SpotifyURL" },
+      Genre: { S: "$context.arguments.Genre" }
     }
   }
 }

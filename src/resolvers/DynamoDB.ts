@@ -23,10 +23,18 @@ export type DynamoScanTemplate = {
   query: DynamoDB.Types.ScanInput
 }
 
+export type DynamoPutItemTemplate = {
+  [key: string]: any
+  kind: "DynamoDB"
+  operation: "PutItem"
+  query: DynamoDB.Types.PutItemInput
+}
+
 export type DynamoMappingTemplate =
   | DynamoQueryTemplate
   | DynamoGetItemTemplate
   | DynamoScanTemplate
+  | DynamoPutItemTemplate
 
 const Resolver = (
   mappingParams: DynamoMappingTemplate,
@@ -80,6 +88,30 @@ const Resolver = (
             )
             resolve(parsedItems)
           }
+        }
+      })
+    }
+
+    if (mappingParams.operation === "PutItem") {
+      const params = parsedParams as DynamoPutItemTemplate
+      DynamoClient.putItem(params.query, (err, data) => {
+        if (err) {
+          console.log("Error", err)
+          reject(err)
+        } else {
+          resolve(data)
+        }
+      })
+    }
+
+    if (mappingParams.operation === "PutItem") {
+      const params = parsedParams as DynamoPutItemTemplate
+      DynamoClient.putItem(params.query, (err, data) => {
+        if (err) {
+          console.log("Error", err)
+          reject(err)
+        } else {
+          resolve(data)
         }
       })
     }
