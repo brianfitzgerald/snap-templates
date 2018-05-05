@@ -112,7 +112,7 @@ Immediate features:
 
 * Response mapping templates
 * Client identity access within `context`
-* Mutation support
+* ~~Mutation support~~
 
 If you want to add support for a kind of template that isn't shown here, you can create a new resolver type by following the format provided in `src/resolvers/JSON.ts`.
 I'd like to provide resolver support for any client / service a developer would want to interface with, so if there's a service you'd like to see, open an Issue.
