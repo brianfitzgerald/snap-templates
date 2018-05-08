@@ -1,4 +1,4 @@
-import { DynamoDB } from "aws-sdk"
+import { DynamoDB, FileSystemCredentials } from "aws-sdk"
 import { SchemaExtensionStatus } from "aws-sdk/clients/directoryservice"
 import {
   GraphQLSchema,
@@ -50,11 +50,40 @@ const DynamoResolver = (
   table: string,
   requestParams: any,
   response: Response
-) => {
-  console.log("args")
-  console.log(key, client, field, requestParams)
-  client.getItem()
-}
+) =>
+  new Promise((resolve, reject) => {
+    console.log("args")
+    console.log(
+      "key",
+      key,
+      "field",
+      field,
+      "requestParams",
+      requestParams,
+      "table",
+      table
+    )
+    // use projection expression
+    client.getItem(
+      {
+        TableName: table,
+        Key: {
+          id: {
+            S: requestParams.id
+          }
+        }
+      },
+      (err, result) => {
+        if (err || !result.Item) {
+          reject(err)
+        } else {
+          const item = DynamoDB.Converter.unmarshall(result.Item)
+          console.log(item)
+          resolve(item)
+        }
+      }
+    )
+  })
 
 export const buildResolver = (
   client: DynamoDB,
@@ -70,12 +99,16 @@ export const buildResolver = (
   if (queryType) {
     const fields = queryType.getFields()
     Object.keys(fields).forEach(key => {
+      console.log(key)
+      const tableType = fields[key].type.toString()
+      console.log("correct", fields[key].type)
+      console.log(tableMapping)
       finalMapping[key] = DynamoResolver.bind(
         null,
         key,
         client,
         fields[key],
-        tableMapping[key]
+        tableMapping[tableType]
       )
     })
   }
