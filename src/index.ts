@@ -1,3 +1,14 @@
+import { DynamoDB } from "aws-sdk"
+import { SchemaExtensionStatus } from "aws-sdk/clients/directoryservice"
+import {
+  GraphQLSchema,
+  graphql,
+  parse,
+  GraphQLNamedType,
+  GraphQLField
+} from "graphql"
+import { TypeMap } from "graphql/type/schema"
+
 export type MappingConfiguration = {
   [key: string]: ResolverMappingTemplate
 }
@@ -26,66 +37,50 @@ export interface GraphQLParams {
   raw: boolean | null | undefined
 }
 
-export const parseParams = (
-  resolverMappingParams: ResolverMappingTemplate,
-  graphQLQueryParams: GraphQLParams
-): ResolverMappingTemplate => {
-  const parsedResolverParams = resolverMappingParams
-  const keys = Object.keys(resolverMappingParams)
-  keys.map(key => {
-    if (typeof resolverMappingParams[key] === "string") {
-      parsedResolverParams[key] = replaceArgumentsInField(
-        resolverMappingParams[key] as string,
-        resolverMappingParams,
-        graphQLQueryParams
-      )
-    }
-    if (typeof parsedResolverParams[key] === "object") {
-      parseParams(parsedResolverParams[key], graphQLQueryParams)
-    }
-  })
-
-  return parsedResolverParams
-}
-
-const replaceArgumentsInField = (
-  paramString: string,
-  resolverMappingParams: ResolverMappingTemplate,
-  graphQLQueryParams: GraphQLParams
-): string => {
-  let parsedParamString = paramString
-  // need to generate an identity field as well
-  for (var param in graphQLQueryParams) {
-    if (paramString.indexOf(`$context.arguments.${param}`) !== -1) {
-      parsedParamString = paramString.replace(
-        `$context.arguments.${param}`,
-        graphQLQueryParams[param] as string
-      )
-    }
-  }
-  return parsedParamString
-}
-
 type ResolverMapping = { [key: string]: Function }
 
+type Schema = {
+  [key: string]: string | object
+}
+
+const DynamoResolver = (
+  key: string,
+  client: DynamoDB,
+  field: GraphQLField<any, any>,
+  table: string,
+  requestParams: any,
+  response: Response
+) => {
+  console.log("args")
+  console.log(key, client, field, requestParams)
+  client.getItem()
+}
+
 export const buildResolver = (
-  mappingTemplate: MappingConfiguration,
-  clients: ClientDefinition[]
+  client: DynamoDB,
+  schema: GraphQLSchema,
+  tableMapping: { [key: string]: string }
 ): ResolverMapping => {
   const finalMapping: ResolverMapping = {}
 
-  Object.keys(mappingTemplate).forEach(key => {
-    const kind = mappingTemplate[key].kind
-    const applicableClient = clients.find(c => c.type === kind)
+  const schemaTypes: TypeMap = schema.getTypeMap()
 
-    if (applicableClient && applicableClient.client) {
-      finalMapping[key] = applicableClient.resolver.bind(
+  const queryType = schema.getQueryType()
+
+  if (queryType) {
+    const fields = queryType.getFields()
+    Object.keys(fields).forEach(key => {
+      finalMapping[key] = DynamoResolver.bind(
         null,
-        mappingTemplate[key],
-        applicableClient.client
+        key,
+        client,
+        fields[key],
+        tableMapping[key]
       )
-    }
-  })
+    })
+  }
+
+  console.log(finalMapping)
 
   return finalMapping
 }

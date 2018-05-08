@@ -1,11 +1,15 @@
 import * as express from "express"
-import { graphql, buildSchema, GraphQLType, ExecutionResult } from "graphql"
+import {
+  graphql,
+  buildSchema,
+  GraphQLType,
+  ExecutionResult,
+  parse
+} from "graphql"
 import * as graphqlHTTP from "express-graphql"
 import { config, DynamoDB, SharedIniFileCredentials } from "aws-sdk"
 import { AttributeValue } from "aws-sdk/clients/dynamodb"
 import { MappingConfiguration, buildResolver } from ".."
-import { DynamoResolver, DynamoPutItemTemplate } from "../resolvers/DynamoDB"
-import { JSONResolver } from "../resolvers/JSON"
 
 const credentials = new SharedIniFileCredentials({ profile: "personal" })
 config.credentials = credentials
@@ -17,99 +21,31 @@ export const APPLICATION_PORT = 3000
 
 const app = express()
 
-const schema = buildSchema(`
-  type Song {
-    id: String
-    SpotifyURL: String
-    Genre: String
-  }
-  type Bear {
-    name: String
-    breed: String
-  }
-  type Query {
-    song(id: String): Song
-    songByGenre(genre: String, table: String): Song
-    bear(name: String): Bear
-  }
-  type Mutation {
-    createSong(id: String, name: String, SpotifyURL: String): String
-  }
-`)
-
-const mapping: MappingConfiguration = {
-  song: {
-    kind: "DynamoDB",
-    operation: "GetItem",
-    query: {
-      TableName: "ambliss-songs",
-      Key: {
-        id: {
-          S: "$context.arguments.id"
-        }
-      }
-    }
-  },
-  songByGenre: {
-    kind: "DynamoDB",
-    operation: "Scan",
-    query: {
-      TableName: "ambliss-songs",
-      FilterExpression: "genre = :genre",
-      ExpressionAttributeValues: {
-        ":genre": {
-          S: "$context.arguments.genre"
-        }
-      }
-    }
-  },
-  createSong: {
-    kind: "DynamoDB",
-    operation: "PutItem",
-    query: {
-      TableName: "ambliss-songs"
-    }
-  },
-  bear: {
-    kind: "JSON",
-    query: {
-      name: "$context.arguments.name"
-    }
-  }
+const schemaString = `
+type Song {
+  id: String
+  SpotifyURL: String
+  Genre: String
 }
-
-const createSong: DynamoPutItemTemplate = {
-  kind: "DynamoDB",
-  operation: "PutItem",
-  query: {
-    TableName: "ambliss-songs",
-    Item: {
-      id: { S: "$context.arguments.id" },
-      SpotifyURL: { S: "$context.arguments.SpotifyURL" },
-      Genre: { S: "$context.arguments.Genre" }
-    }
-  }
+type Query {
+  song(id: String): Song
+  songByGenre(genre: String, table: String): Song
 }
+type Mutation {
+  createSong(id: String, name: String, SpotifyURL: String): String
+}
+`
 
-const bears = [
-  {
-    name: "Carl",
-    breed: "black bear"
-  },
-  {
-    name: "Steve",
-    breed: "polar bear"
-  }
-]
+const schema = buildSchema(schemaString)
+
+// const parsedAST = parse(schemaString)
+// console.log("parsed ast", JSON.stringify(parsedAST, null, 2))
 
 app.use(
   "/graphql",
   graphqlHTTP({
     schema: schema,
-    rootValue: buildResolver(mapping, [
-      DynamoResolver(ddb),
-      JSONResolver(bears)
-    ]),
+    rootValue: buildResolver(ddb, schema, { Song: "ambliss-songs" }),
     graphiql: true
   })
 )
