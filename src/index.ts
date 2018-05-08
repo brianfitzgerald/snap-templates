@@ -52,17 +52,6 @@ const DynamoResolver = (
   response: Response
 ) =>
   new Promise((resolve, reject) => {
-    console.log("args")
-    console.log(
-      "key",
-      key,
-      "field",
-      field,
-      "requestParams",
-      requestParams,
-      "table",
-      table
-    )
     // use projection expression
     client.getItem(
       {
@@ -78,7 +67,6 @@ const DynamoResolver = (
           reject(err)
         } else {
           const item = DynamoDB.Converter.unmarshall(result.Item)
-          console.log(item)
           resolve(item)
         }
       }
@@ -99,10 +87,7 @@ export const buildResolver = (
   if (queryType) {
     const fields = queryType.getFields()
     Object.keys(fields).forEach(key => {
-      console.log(key)
       const tableType = fields[key].type.toString()
-      console.log("correct", fields[key].type)
-      console.log(tableMapping)
       finalMapping[key] = DynamoResolver.bind(
         null,
         key,
