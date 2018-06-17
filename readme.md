@@ -4,10 +4,10 @@
 
 Easily integrate the following services with GraphQL, without having to write resolvers:
 
-* DynamoDB
-* AWS Lambda
-* MongoDB
-* JSON
+- DynamoDB
+- AWS Lambda
+- MongoDB
+- JSON
 
 And easily add more.
 
